@@ -1,8 +1,8 @@
 import java.util.Random;
 
 public class Main {
-    public static final int ELEVATORS_COUNT = 2;
-    public static final int FLOORS_COUNT = 5;
+    public static final int ELEVATORS_COUNT = 4;
+    public static final int FLOORS_COUNT = 16;
 
     public static void main(String[] args) {
         Building building = new Building(ELEVATORS_COUNT, FLOORS_COUNT);

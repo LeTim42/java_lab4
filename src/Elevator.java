@@ -92,7 +92,7 @@ public class Elevator {
                     hasNearElevator[Direction.UP] = true; // выше ближайшего запроса сверху есть другой лифт, который не едет вверх и находится к запросу не дальше, чем текущий лифт
         }
 
-        // если текущий лифт находится ближе всего к ближайшего запросу снизу/сверху - двигаться в его направлении
+        // если текущий лифт находится ближе всего к ближайшему запросу снизу/сверху - двигаться в его направлении
         for (int direction = 0; direction < 2; ++direction) {
             if (currentDirection != 1 - direction && hasRequests[direction] && !hasNearElevator[direction]) {
                 currentDirection = direction;
@@ -133,7 +133,11 @@ public class Elevator {
         return currentDirection;
     }
 
+    public boolean hasDestination(int floor) {
+        return destinations[floor] != 0;
+    }
+
     private void log(String message) {
-        System.out.println("Elevator " + (id + 1) + ": " + message);
+        building.log("Elevator " + (id + 1) + ": " + message);
     }
 }
