@@ -7,14 +7,14 @@ public class Main {
         in = new Scanner(System.in);
         System.out.println("""
                 Вводите положительные числа или нажимайте Enter для значений по умолчанию
-                Для остановки запросов нажмите Enter
+                Для остановки новых запросов нажмите Enter
                 Для завершения симуляции нажмите Enter еще раз
                 """);
         int elevators = input("Количество лифтов", 2, 1);
         int floors = input("Количество этажей", 8, 3);
         int simulationTime = input("Задержка между шагами симуляции в мс", 1000, 100);
         int minRequestsTime = input("Минимальная задержка между запросами в мс", 1000, 100);
-        int maxRequestsTime = input("Максимальная задержка между запросами в мс", 5000, minRequestsTime);
+        int maxRequestsTime = input("Максимальная задержка между запросами в мс", Math.max(5000, minRequestsTime), minRequestsTime);
         Building building = new Building(elevators, floors, simulationTime, minRequestsTime, maxRequestsTime);
         building.start();
         in.nextLine();
