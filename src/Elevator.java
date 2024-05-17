@@ -109,10 +109,12 @@ public class Elevator {
             destinations[currentFloor]--;
             log("person went out at floor " + (currentFloor + 1));
         } else if (currentPeopleEnteringCount != 0) {
-            int floor = generator.nextInt(
-                    currentDirection == Direction.UP ? currentFloor + 1 : 0,
-                    currentDirection == Direction.UP ? floors : currentFloor
-            );
+            int floor = 0;
+            if (currentDirection == Direction.UP) {
+                floor = generator.nextInt(currentFloor + 1, floors);
+            } else if (currentFloor != 1 && generator.nextBoolean()) {
+                floor = generator.nextInt(1, currentFloor);
+            }
             destinations[floor]++;
             currentPeopleEnteringCount--;
             log("person entered and pushed button " + (floor + 1) + " at floor " + (currentFloor + 1));

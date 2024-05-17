@@ -12,9 +12,9 @@ public class Main {
             while (true) {
                 try {
                     Thread.sleep(generator.nextLong(1000, 5000));
-                    boolean up = generator.nextBoolean();
-                    int floor = generator.nextInt(up ? 0 : 1, FLOORS_COUNT - (up ? 1 : 0));
-                    building.request(floor, up ? Direction.UP : Direction.DOWN);
+                    int from = generator.nextBoolean() ? 0 : generator.nextInt(1, FLOORS_COUNT);
+                    boolean up = from == 0 || (generator.nextBoolean() && generator.nextInt(1, FLOORS_COUNT - 1) >= from);
+                    building.request(from, up ? Direction.UP : Direction.DOWN);
                 } catch (InterruptedException e) {
                     break;
                 }

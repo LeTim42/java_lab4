@@ -43,9 +43,6 @@ public class Building extends Thread {
 
     public void log(String message) {
         logs.add(message);
-        if (logs.size() > getFloorsCount()) {
-            logs.poll();
-        }
     }
 
     public int getElevatorsCount() {
@@ -73,11 +70,17 @@ public class Building extends Thread {
     }
 
     private void print() {
+        int floors = getFloorsCount();
+        int digits = (int)Math.floor(Math.log10(floors)) + 1;
+        while (logs.size() > floors) {
+            logs.poll();
+        }
         StringBuilder text = new StringBuilder();
         String[] logs = this.logs.toArray(new String[0]);
         log("--------------------------------");
         text.append("\n".repeat(50));
-        for (int floor = getFloorsCount() - 1; floor >= 0; --floor) {
+        for (int floor = floors - 1; floor >= 0; --floor) {
+            text.append(" ".repeat(digits - (int)Math.floor(Math.log10(floor + 1)))).append(floor + 1).append(' ');
             text.append(requests[0].get(floor) != 0 ? '\u25bc' : ' ').append(requests[1].get(floor) != 0 ? '\u25b2' : ' ').append('\u2502');
             for (Elevator elevator : elevators) {
                 if (elevator.getFloor() == floor) {
