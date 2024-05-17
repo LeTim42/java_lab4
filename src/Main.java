@@ -7,17 +7,20 @@ public class Main {
         in = new Scanner(System.in);
         System.out.println("""
                 Вводите положительные числа или нажимайте Enter для значений по умолчанию
-                Для завершения симуляции нажмите Enter
+                Для остановки запросов нажмите Enter
+                Для завершения симуляции нажмите Enter еще раз
                 """);
         int elevators = input("Количество лифтов", 2, 1);
-        int floors = input("Количество этажей", 5, 3);
+        int floors = input("Количество этажей", 8, 3);
         int simulationTime = input("Задержка между шагами симуляции в мс", 1000, 100);
-        int minRequestsTime = input("Минимальное время между запросами в мс", 1000, 100);
-        int maxRequestsTime = input("Максимальное время между запросами в мс", 5000, minRequestsTime);
+        int minRequestsTime = input("Минимальная задержка между запросами в мс", 1000, 100);
+        int maxRequestsTime = input("Максимальная задержка между запросами в мс", 5000, minRequestsTime);
         Building building = new Building(elevators, floors, simulationTime, minRequestsTime, maxRequestsTime);
         building.start();
         in.nextLine();
-        building.stop();
+        building.stopRequests();
+        in.nextLine();
+        building.stopSimulation();
     }
 
     private static int input(String message, int def, int min) {

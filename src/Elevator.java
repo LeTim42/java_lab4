@@ -34,11 +34,6 @@ public class Elevator {
     }
 
     public void decide() {
-        // остановить лифт, если он движется вниз на первом или вверх на последнем этаже
-        if ((currentFloor == 0 && currentDirection == Direction.DOWN) ||
-            (currentFloor == floors - 1 && currentDirection == Direction.UP))
-            currentDirection = Direction.STOP;
-
         // если есть заходящие/выходящие люди - не надо решать, куда двигаться
         if (destinations[currentFloor] != 0 || currentPeopleEnteringCount != 0) return;
 

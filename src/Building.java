@@ -34,15 +34,15 @@ public class Building {
         requestsThread = new Thread(() -> {
             Random generator = new Random();
             while (true) {
+                int floor = generator.nextBoolean() ? 0 : generator.nextInt(1, floors);
+                boolean up = floor == 0 || (generator.nextBoolean() && generator.nextInt(1, floors - 1) >= floor);
+                requests[up ? Direction.UP : Direction.DOWN].incrementAndGet(floor);
+                log("Запрос " + (up ? "вверх" : "вниз") + " на этаже " + (floor + 1));
                 try {
                     Thread.sleep(generator.nextLong(minRequestsTime, maxRequestsTime + 1));
                 } catch (InterruptedException e) {
                     break;
                 }
-                int floor = generator.nextBoolean() ? 0 : generator.nextInt(1, floors);
-                boolean up = floor == 0 || (generator.nextBoolean() && generator.nextInt(1, floors - 1) >= floor);
-                requests[up ? Direction.UP : Direction.DOWN].incrementAndGet(floor);
-                log("Запрос " + (up ? "вверх" : "вниз") + " на этаже " + (floor + 1));
             }
         });
     }
@@ -52,8 +52,11 @@ public class Building {
         requestsThread.start();
     }
 
-    public void stop() {
+    public void stopRequests() {
         requestsThread.interrupt();
+    }
+
+    public void stopSimulation() {
         simulationThread.interrupt();
     }
 
@@ -92,7 +95,7 @@ public class Building {
             logs.poll();
         StringBuilder text = new StringBuilder();
         String[] logs = this.logs.toArray(new String[0]);
-        if (logs.length != 0)
+        if (logs.length != 0 && logs[logs.length - 1].charAt(0) != '-')
             log("--------------------------------");
         text.append("\n".repeat(50));
         for (int floor = floors - 1; floor >= 0; --floor) {
