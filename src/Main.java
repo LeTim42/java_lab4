@@ -1,4 +1,3 @@
-import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
@@ -6,28 +5,19 @@ public class Main {
 
     public static void main(String[] args) {
         in = new Scanner(System.in);
-        System.out.println("Вводите положительные числа или просто нажимайте Enter для значений по умолчанию");
+        System.out.println("""
+                Вводите положительные числа или нажимайте Enter для значений по умолчанию
+                Для завершения симуляции нажмите Enter
+                """);
         int elevators = input("Количество лифтов", 2, 1);
         int floors = input("Количество этажей", 5, 3);
-        int minTime = input("Минимальное время между запросами в мс", 1000, 100);
-        int maxTime = input("Максимальное время между запросами в мс", 5000, minTime);
-        int simulationTime = input("Скорость лифтов в мс", 1000, 100);
-        Building building = new Building(elevators, floors, simulationTime);
+        int simulationTime = input("Задержка между шагами симуляции в мс", 1000, 100);
+        int minRequestsTime = input("Минимальное время между запросами в мс", 1000, 100);
+        int maxRequestsTime = input("Максимальное время между запросами в мс", 5000, minRequestsTime);
+        Building building = new Building(elevators, floors, simulationTime, minRequestsTime, maxRequestsTime);
         building.start();
-        Thread requestsThread = new Thread(() -> {
-            Random generator = new Random();
-            while (true) {
-                try {
-                    Thread.sleep(generator.nextLong(minTime, maxTime + 1));
-                    int floor = generator.nextBoolean() ? 0 : generator.nextInt(1, floors);
-                    boolean up = floor == 0 || (generator.nextBoolean() && generator.nextInt(1, floors - 1) >= floor);
-                    building.request(floor, up ? Direction.UP : Direction.DOWN);
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-        });
-        requestsThread.start();
+        in.nextLine();
+        building.stop();
     }
 
     private static int input(String message, int def, int min) {

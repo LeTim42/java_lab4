@@ -39,10 +39,10 @@ public class Elevator {
             (currentFloor == floors - 1 && currentDirection == Direction.UP))
             currentDirection = Direction.STOP;
 
-        // если есть заходящие/выходящие люди - ничего не делать
+        // если есть заходящие/выходящие люди - не надо решать, куда двигаться
         if (destinations[currentFloor] != 0 || currentPeopleEnteringCount != 0) return;
 
-        // есть ли запросы "по пути" на текущем этаже:
+        // если есть запросы "по пути" на текущем этаже - впустить людей
         for (int direction = 0; direction < 2; ++direction) {
             if (currentDirection != 1 - direction) {
                 int accepted = building.acceptRequests(currentFloor, direction);
@@ -54,7 +54,7 @@ public class Elevator {
             }
         }
 
-        boolean[] hasDestinations = new boolean[2]; // есть ли нажатый кнопки этажа снизу/сверху
+        boolean[] hasDestinations = new boolean[2]; // есть ли нажатые кнопки ниже/выше текущего этажа
         boolean[] hasRequests = new boolean[2]; // есть ли запросы снизу/сверху
         int[] nearestRequests = new int[2]; // ближайший запрос снизу/сверху
         for (int above = 0; above < 2; ++above) {
@@ -68,13 +68,13 @@ public class Elevator {
             }
         }
 
-        // если нет ни запросов, ни людей в лифте - остановиться
+        // если нет ни запросов, ни нажатых кнопок - остановиться
         if (!hasDestinations[0] && !hasDestinations[1] && !hasRequests[0] && !hasRequests[1]) {
             currentDirection = Direction.STOP;
             return;
         }
 
-        //если нажаты кнопки ниже/выше текущего этажа - двигаться в этом направлении
+        //если нажаты кнопки ниже/выше текущего этажа - двигаться в их направлении
         for (int direction = 0; direction < 2; ++direction) {
             if (hasDestinations[direction] && currentDirection != 1 - direction) {
                 currentDirection = direction;
@@ -118,29 +118,26 @@ public class Elevator {
         if (destinations[currentFloor] != 0) {
             destinations[currentFloor]--;
             lastAction = Action.PEOPLE_WENT_OUT;
-            log("person went out at floor " + (currentFloor + 1));
+            log("человек вышел на этаже " + (currentFloor + 1));
         } else if (currentPeopleEnteringCount != 0) {
             int floor = 0;
-            if (currentDirection == Direction.UP) {
+            if (currentDirection == Direction.UP)
                 floor = generator.nextInt(currentFloor + 1, floors);
-            } else if (currentFloor != 1 && generator.nextBoolean()) {
+            else if (currentFloor != 1 && generator.nextBoolean())
                 floor = generator.nextInt(1, currentFloor);
-            }
             destinations[floor]++;
             currentPeopleEnteringCount--;
             lastAction = Action.PEOPLE_ENTERED;
-            log("person entered and pushed button " + (floor + 1) + " at floor " + (currentFloor + 1));
-        } else if (currentDirection == Direction.UP) {
-            currentFloor++;
-            lastAction = Action.MOVED_UP;
-            log("moves up to floor " + (currentFloor + 1));
+            log("человек вошел и нажал кнопку " + (floor + 1) + " на этаже " + (currentFloor + 1));
         } else if (currentDirection == Direction.DOWN) {
             currentFloor--;
             lastAction = Action.MOVED_DOWN;
-            log("moves down to floor " + (currentFloor + 1));
-        } else {
-            lastAction = Action.STAY;
-        }
+            log("опустился до этажа " + (currentFloor + 1));
+        } else if (currentDirection == Direction.UP) {
+            currentFloor++;
+            lastAction = Action.MOVED_UP;
+            log("поднялся до этажа " + (currentFloor + 1));
+        } else lastAction = Action.STAY;
     }
 
     public int getFloor() {
@@ -167,6 +164,6 @@ public class Elevator {
     }
 
     private void log(String message) {
-        building.log("Elevator " + (id + 1) + ": " + message);
+        building.log("Лифт " + (id + 1) + ": " + message);
     }
 }

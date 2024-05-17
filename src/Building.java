@@ -1,46 +1,60 @@
+import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
-public class Building extends Thread {
+public class Building {
     private final Elevator[] elevators;
     private final AtomicIntegerArray[] requests;
     // requests[direction][floor] - сколько человек ждут лифт на этаже floor, чтобы поехать в направлении direction
     private final ConcurrentLinkedQueue<String> logs;
-    private final int simulationTime;
+    private final Thread simulationThread, requestsThread;
 
-    public Building(int elevators, int floors, int simulationTime) {
+    public Building(int elevators, int floors, int simulationTime, int minRequestsTime, int maxRequestsTime) {
         this.elevators = new Elevator[elevators];
         requests = new AtomicIntegerArray[2];
         logs = new ConcurrentLinkedQueue<>();
-        this.simulationTime = simulationTime;
         requests[0] = new AtomicIntegerArray(floors);
         requests[1] = new AtomicIntegerArray(floors);
-        for (int i = 0; i < elevators; ++i) {
+        for (int i = 0; i < elevators; ++i)
             this.elevators[i] = new Elevator(this, i);
-        }
-    }
-
-    @Override
-    public void run() {
-        while (true) {
-            try {
-                for (Elevator elevator : elevators) {
+        simulationThread = new Thread(() -> {
+            while (true) {
+                for (Elevator elevator : this.elevators)
                     elevator.decide();
-                }
-                for (Elevator elevator : elevators) {
+                for (Elevator elevator : this.elevators)
                     elevator.move();
-                }
                 print();
-                Thread.sleep(simulationTime);
-            } catch (InterruptedException e) {
-                break;
+                try {
+                    Thread.sleep(simulationTime);
+                } catch (InterruptedException e) {
+                    break;
+                }
             }
-        }
+        });
+        requestsThread = new Thread(() -> {
+            Random generator = new Random();
+            while (true) {
+                try {
+                    Thread.sleep(generator.nextLong(minRequestsTime, maxRequestsTime + 1));
+                } catch (InterruptedException e) {
+                    break;
+                }
+                int floor = generator.nextBoolean() ? 0 : generator.nextInt(1, floors);
+                boolean up = floor == 0 || (generator.nextBoolean() && generator.nextInt(1, floors - 1) >= floor);
+                requests[up ? Direction.UP : Direction.DOWN].incrementAndGet(floor);
+                log("Запрос " + (up ? "вверх" : "вниз") + " на этаже " + (floor + 1));
+            }
+        });
     }
 
-    public void request(int floor, int direction) {
-        requests[direction].incrementAndGet(floor);
-        log("Request " + (direction == Direction.UP ? "up" : "down") + " at floor " + (floor + 1));
+    public void start() {
+        simulationThread.start();
+        requestsThread.start();
+    }
+
+    public void stop() {
+        requestsThread.interrupt();
+        simulationThread.interrupt();
     }
 
     public void log(String message) {
@@ -73,23 +87,22 @@ public class Building extends Thread {
 
     private void print() {
         int floors = getFloorsCount();
-        int digits = (int)Math.floor(Math.log10(floors)) + 1;
-        while (logs.size() > floors) {
+        int digits = (int) Math.floor(Math.log10(floors)) + 1;
+        while (logs.size() > floors)
             logs.poll();
-        }
         StringBuilder text = new StringBuilder();
         String[] logs = this.logs.toArray(new String[0]);
-        log("--------------------------------");
+        if (logs.length != 0)
+            log("--------------------------------");
         text.append("\n".repeat(50));
         for (int floor = floors - 1; floor >= 0; --floor) {
-            text.append(" ".repeat(digits - (int)Math.floor(Math.log10(floor + 1)))).append(floor + 1).append(' ');
+            text.append(" ".repeat(digits - (int) Math.floor(Math.log10(floor + 1)))).append(floor + 1).append(' ');
             text.append(requests[0].get(floor) != 0 ? '\u25bc' : ' ').append(requests[1].get(floor) != 0 ? '\u25b2' : ' ').append('\u2502');
             for (Elevator elevator : elevators) {
-                if (elevator.getFloor() == floor) {
+                if (elevator.getFloor() == floor)
                     text.append(elevator.getLastAction());
-                } else {
+                else
                     text.append(elevator.hasDestination(floor) ? '\u25aa' : ' ');
-                }
                 text.append('\u2502');
             }
             if (floor < logs.length)
