@@ -1,5 +1,13 @@
 import java.util.Random;
 
+enum Action {
+    STAY,
+    MOVED_DOWN,
+    MOVED_UP,
+    PEOPLE_ENTERED,
+    PEOPLE_WENT_OUT
+}
+
 public class Elevator {
     private final Building building; // ссылка на здание
     private final int id; // номер лифта
@@ -9,6 +17,7 @@ public class Elevator {
     private int currentDirection; // текущее направление, в котором движется лифт
     private int currentPeopleEnteringCount; // текущее количество человек кто хочет зайти в лифт
     private final int[] destinations; // сколько человек собираются выходить на каждом этаже
+    private Action lastAction; // последнее действие лифта (двигался вниз/вверх, впускал/выпускал людей или стоял на месте)
     private final Random generator;
 
     public Elevator(Building building, int id) {
@@ -20,6 +29,7 @@ public class Elevator {
         currentDirection = Direction.STOP;
         currentPeopleEnteringCount = 0;
         destinations = new int[building.getFloorsCount()];
+        lastAction = Action.STAY;
         generator = new Random();
     }
 
@@ -107,6 +117,7 @@ public class Elevator {
     public void move() {
         if (destinations[currentFloor] != 0) {
             destinations[currentFloor]--;
+            lastAction = Action.PEOPLE_WENT_OUT;
             log("person went out at floor " + (currentFloor + 1));
         } else if (currentPeopleEnteringCount != 0) {
             int floor = 0;
@@ -117,13 +128,18 @@ public class Elevator {
             }
             destinations[floor]++;
             currentPeopleEnteringCount--;
+            lastAction = Action.PEOPLE_ENTERED;
             log("person entered and pushed button " + (floor + 1) + " at floor " + (currentFloor + 1));
         } else if (currentDirection == Direction.UP) {
             currentFloor++;
+            lastAction = Action.MOVED_UP;
             log("moves up to floor " + (currentFloor + 1));
         } else if (currentDirection == Direction.DOWN) {
             currentFloor--;
+            lastAction = Action.MOVED_DOWN;
             log("moves down to floor " + (currentFloor + 1));
+        } else {
+            lastAction = Action.STAY;
         }
     }
 
@@ -137,6 +153,17 @@ public class Elevator {
 
     public boolean hasDestination(int floor) {
         return destinations[floor] != 0;
+    }
+
+    public char getLastAction() {
+        switch (lastAction) {
+            case STAY -> { return '\u25a0'; }
+            case MOVED_DOWN -> { return '\u25bc'; }
+            case MOVED_UP -> {return '\u25b2'; }
+            case PEOPLE_ENTERED -> { return '\u25ba'; }
+            case PEOPLE_WENT_OUT -> { return '\u25c4'; }
+            default -> { return ' '; }
+        }
     }
 
     private void log(String message) {

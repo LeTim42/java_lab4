@@ -6,11 +6,13 @@ public class Building extends Thread {
     private final AtomicIntegerArray[] requests;
     // requests[direction][floor] - сколько человек ждут лифт на этаже floor, чтобы поехать в направлении direction
     private final ConcurrentLinkedQueue<String> logs;
+    private final int simulationTime;
 
-    public Building(int elevators, int floors) {
+    public Building(int elevators, int floors, int simulationTime) {
         this.elevators = new Elevator[elevators];
         requests = new AtomicIntegerArray[2];
         logs = new ConcurrentLinkedQueue<>();
+        this.simulationTime = simulationTime;
         requests[0] = new AtomicIntegerArray(floors);
         requests[1] = new AtomicIntegerArray(floors);
         for (int i = 0; i < elevators; ++i) {
@@ -25,11 +27,11 @@ public class Building extends Thread {
                 for (Elevator elevator : elevators) {
                     elevator.decide();
                 }
-                print();
                 for (Elevator elevator : elevators) {
                     elevator.move();
                 }
-                Thread.sleep(1000);
+                print();
+                Thread.sleep(simulationTime);
             } catch (InterruptedException e) {
                 break;
             }
@@ -84,17 +86,7 @@ public class Building extends Thread {
             text.append(requests[0].get(floor) != 0 ? '\u25bc' : ' ').append(requests[1].get(floor) != 0 ? '\u25b2' : ' ').append('\u2502');
             for (Elevator elevator : elevators) {
                 if (elevator.getFloor() == floor) {
-                    switch (elevator.getDirection()) {
-                        case Direction.DOWN:
-                            text.append('\u25bc');
-                            break;
-                        case Direction.UP:
-                            text.append('\u25b2');
-                            break;
-                        default:
-                            text.append('\u25a0');
-                            break;
-                    }
+                    text.append(elevator.getLastAction());
                 } else {
                     text.append(elevator.hasDestination(floor) ? '\u25aa' : ' ');
                 }
